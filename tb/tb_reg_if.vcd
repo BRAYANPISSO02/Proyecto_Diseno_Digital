@@ -1,0 +1,185 @@
+$date
+	Thu Jul 17 18:31:10 2025
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module tb_reg_if $end
+$var wire 32 ! status [31:0] $end
+$var wire 32 " rdata [31:0] $end
+$var wire 32 # ctrl [31:0] $end
+$var parameter 32 $ ADDR_WIDTH $end
+$var parameter 32 % DATA_WIDTH $end
+$var reg 8 & addr [7:0] $end
+$var reg 1 ' clk $end
+$var reg 1 ( ren $end
+$var reg 1 ) reset_n $end
+$var reg 32 * status_in [31:0] $end
+$var reg 32 + wdata [31:0] $end
+$var reg 1 , wen $end
+$scope module dut $end
+$var wire 8 - addr [7:0] $end
+$var wire 1 ' clk $end
+$var wire 32 . ctrl [31:0] $end
+$var wire 32 / rdata [31:0] $end
+$var wire 1 ( ren $end
+$var wire 1 ) reset_n $end
+$var wire 32 0 status [31:0] $end
+$var wire 32 1 status_in [31:0] $end
+$var wire 32 2 wdata [31:0] $end
+$var wire 1 , wen $end
+$var parameter 8 3 ADDR_CTRL $end
+$var parameter 8 4 ADDR_STATUS $end
+$var parameter 32 5 ADDR_WIDTH $end
+$var parameter 32 6 DATA_WIDTH $end
+$var reg 32 7 ctrl_reg [31:0] $end
+$var reg 32 8 read_data [31:0] $end
+$var reg 32 9 status_reg [31:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+b100000 6
+b1000 5
+b100 4
+b0 3
+b100000 %
+b1000 $
+$end
+#0
+$dumpvars
+b0 9
+b0 8
+b0 7
+b0 2
+b0 1
+b0 0
+b0 /
+b0 .
+b0 -
+0,
+b0 +
+b0 *
+0)
+0(
+0'
+b0 &
+b0 #
+b0 "
+b0 !
+$end
+#5000
+1'
+#10000
+1,
+b11111111 +
+b11111111 2
+0'
+1)
+#15000
+b11111111 #
+b11111111 .
+b11111111 7
+1'
+#20000
+0,
+0'
+#25000
+1'
+#30000
+b11111111 "
+b11111111 /
+b11111111 8
+1(
+0'
+#35000
+1'
+#40000
+b0 "
+b0 /
+b0 8
+0(
+0'
+#45000
+1'
+#50000
+b10100101101001011010010110100101 *
+b10100101101001011010010110100101 1
+0'
+#55000
+b10100101101001011010010110100101 !
+b10100101101001011010010110100101 0
+b10100101101001011010010110100101 9
+1'
+#60000
+b10100101101001011010010110100101 "
+b10100101101001011010010110100101 /
+b10100101101001011010010110100101 8
+b100 &
+b100 -
+1(
+0'
+#65000
+1'
+#70000
+b0 "
+b0 /
+b0 8
+0(
+0'
+#75000
+1'
+#80000
+b0 !
+b0 0
+b0 9
+b0 #
+b0 .
+b0 7
+0'
+1)
+#85000
+b10100101101001011010010110100101 !
+b10100101101001011010010110100101 0
+b10100101101001011010010110100101 9
+1'
+#90000
+b0 &
+b0 -
+1(
+0'
+#95000
+1'
+#100000
+0(
+0'
+#105000
+1'
+#110000
+b10100101101001011010010110100101 "
+b10100101101001011010010110100101 /
+b10100101101001011010010110100101 8
+b100 &
+b100 -
+1(
+0'
+#115000
+1'
+#120000
+b0 "
+b0 /
+b0 8
+0(
+0'
+#125000
+1'
+#130000
+0'
+#135000
+1'
+#140000
+0'
