@@ -271,7 +271,178 @@ Este módulo top-level conecta `reg_iface` y `pwm_unit`, gestionando el flujo de
 26
 27 endmodule 
 ```
+El módulo pwm_unit genera una señal PWM basada en dos parámetros: el período
+(duración total del ciclo) y el ciclo de trabajo (porción del ciclo en que la señal está
+en alto).
 
+#### Funciones clave
+- Lógica del contador: El módulo pwm_unit genera una señal PWM basada en dos parámetros: el período
+(duración total del ciclo) y el ciclo de trabajo (porción del ciclo en que la señal está
+en alto).
+- Salida PWM: La salida pwm_o está en alto (1) cuando el contador es menor
+que cfg_duty, y en bajo (0) en caso contrario. Esto genera un pulso cuya
+duración depende de cfg_duty en relación con cfg_period.
 
-### Módulo reg_iface
+#### Cómo funciona
+
+Supongamos un reloj digital configurado para completar un período en 100 ciclos (cfg_period = 100). En este escenario, el parámetro cfg_duty define el ciclo de trabajo de la señal, es decir, cuántos de esos 100 ciclos la señal permanece en estado alto. Por ejemplo, si cfg_duty = 25, la señal estará activa (en alto) durante los primeros 25 ciclos y luego inactiva (en bajo) durante los 75 ciclos restantes. Esto equivale a un ciclo de trabajo del 25%, lo que significa que la señal está encendida únicamente el 25% del tiempo total del período.
+
+Este comportamiento corresponde a una señal PWM (modulación por ancho de pulso), muy utilizada en electrónica digital para controlar la potencia entregada a dispositivos como motores, LEDs o sistemas de calefacción. Aunque la señal es completamente digital (alta o baja), al variar el valor de cfg_duty se puede ajustar de forma precisa la cantidad de energía promedio entregada. Cuanto mayor sea el valor del ciclo de trabajo, más tiempo permanece la señal en alto dentro de cada período, y por tanto, mayor es la potencia transferida al dispositivo.
+
+### Módulo reg_iface: Interfaz de registros
+
+```
+module reg_iface (
+2 clk_i, rst_ni, addr_i, wr_data_i, rd_data_o, wr_en_i, rd_en_i,
+3 ctrl_o, status_in_i, status_o
+4 );
+5 parameter AW = 8;
+6 parameter DW = 32;
+7
+8 input clk_i;
+9 input rst_ni;
+10 input [AW-1:0] addr_i;
+11 input [DW-1:0] wr_data_i;
+12 output [DW-1:0] rd_data_o;
+13 input wr_en_i;
+14 input rd_en_i;
+4
+15 output [DW-1:0] ctrl_o;
+16 input [DW-1:0] status_in_i;
+17 output [DW-1:0] status_o;
+18
+19 localparam [AW-1:0] CTRL_ADDR = 8’h00;
+20 localparam [AW-1:0] STATUS_ADDR = 8’h04;
+21
+22 reg [DW-1:0] ctrl_reg;
+23 reg [DW-1:0] status_reg;
+24 reg [DW-1:0] rd_data_reg;
+25
+26 // Escritura y actualización de estado
+27 always @(posedge clk_i or negedge rst_ni) begin
+28 if (!rst_ni) begin
+29 ctrl_reg <= {DW{1’b0}};
+30 status_reg <= {DW{1’b0}};
+31 end else begin
+32 status_reg <= status_in_i;
+33 if (wr_en_i) begin
+34 case (addr_i)
+35 CTRL_ADDR: ctrl_reg <= wr_data_i;
+36 default: /* noop */ ;
+37 endcase
+38 end
+39 end
+40 end
+41
+42 // Lectura
+43 always @(*) begin
+44 if (rd_en_i) begin
+45 case (addr_i)
+46 CTRL_ADDR: rd_data_reg = ctrl_reg;
+47 STATUS_ADDR: rd_data_reg = status_reg;
+48 default: rd_data_reg = {DW{1’b0}};
+49 endcase
+50 end else begin
+51 rd_data_reg = {DW{1’b0}};
+52 end
+53 end
+54
+55 assign ctrl_o = ctrl_reg;
+56 assign status_o = status_reg;
+57 assign rd_data_o = rd_data_reg;
+58
+59 endmodule
+```
+El módulo reg_iface proporciona una interfaz basada en registros para leer y
+escribir datos de control y estado.
+
+#### Funciones clave
+- Escritura: Cuando wr_en_i está en alto, los datos en wr_data_i se escriben en ctrl_reg si addr_i es CTRL_ADDR (0x00).
+- Lectura: Cuando rd_en_i está en alto, rd_data_o devuelve ctrl_reg (si
+addr_i = 0x00) o status_reg (si addr_i = 0x04).
+- Actualización de Estado: status_reg se actualiza continuamente con status_in_i.
+- Reinicio: Al activar el reinicio (rst_ni en bajo), ctrl_reg y status_reg
+se ponen a 0.
+
+#### Cómo funciona
+Imagina que reg_iface funciona como un archivador digital que contiene dos carpetas principales: una carpeta de control ubicada en la dirección 0x00 y una carpeta de estado ubicada en la dirección 0x04. La carpeta de control es donde el sistema permite escribir configuraciones nuevas, como parámetros de operación o comandos de activación. También es posible leer su contenido para verificar qué configuraciones han sido establecidas previamente. Esta carpeta actúa como el punto de entrada para que el usuario o el sistema modifiquen el comportamiento del módulo.
+
+Por otro lado, la carpeta de estado representa información que proviene de una fuente externa al usuario, como sensores o señales del entorno, y se actualiza de forma automática. Esta carpeta no puede ser modificada directamente, pero su contenido puede leerse para conocer el estado actual del sistema. De este modo, reg_iface permite una separación clara entre las acciones de control (escritura y lectura de configuraciones) y la supervisión del sistema (lectura del estado), facilitando la interacción con el hardware de forma estructurada y segura.
+
+### Módulo top_pwm_alt: Integración del sistema
+
+```
+module top_pwm_alt (
+2 clk_i, rst_ni, addr_i, wr_data_i, rd_data_o, wr_en_i, rd_en_i,
+pwm_out_o
+3 );
+4 parameter AW = 8;
+5 parameter DW = 32;
+6 parameter WIDTH_PERIOD = 16;
+6
+7 parameter WIDTH_DUTY = 16;
+8
+9 input clk_i;
+10 input rst_ni;
+11 input [AW-1:0] addr_i;
+12 input [DW-1:0] wr_data_i;
+13 output [DW-1:0] rd_data_o;
+14 input wr_en_i;
+15 input rd_en_i;
+16 output pwm_out_o;
+17
+18 wire [DW-1:0] ctrl_reg;
+19 wire [DW-1:0] status_in;
+20 wire [DW-1:0] status_reg;
+21
+22 wire [WIDTH_PERIOD-1:0] period_ch0;
+23 wire [WIDTH_DUTY-1:0] duty_ch0;
+24
+25 assign period_ch0 = ctrl_reg[DW-1:WIDTH_DUTY];
+26 assign duty_ch0 = ctrl_reg[WIDTH_DUTY-1:0];
+27
+28 wire error_flag = (duty_ch0 > period_ch0);
+29 assign status_in = {{DW-1{1’b0}}, error_flag};
+30
+31 reg_iface reg_unit (
+32 .clk_i(clk_i),
+33 .rst_ni(rst_ni),
+34 .addr_i(addr_i),
+35 .wr_data_i(wr_data_i),
+36 .rd_data_o(rd_data_o),
+37 .wr_en_i(wr_en_i),
+38 .rd_en_i(rd_en_i),
+39 .ctrl_o(ctrl_reg),
+40 .status_in_i(status_in),
+41 .status_o(status_reg)
+42 );
+43
+44 pwm_unit pwm_core_inst (
+45 .clk_i(clk_i),
+46 .rst_ni(rst_ni),
+47 .cfg_period(period_ch0),
+48 .cfg_duty(duty_ch0),
+49 .pwm_o(pwm_out_o)
+50 );
+51
+52 endmodule
+```
+
+El módulo top_pwm_alt conecta reg_iface y pwm_unit para formar un sistema
+PWM completo.
+
+#### Funciones clave
+- Mapeo de Registros a PWM: El registro ctrl_reg de 32 bits se divide en
+period_ch0 (16 bits superiores) y duty_ch0 (16 bits inferiores) para el módulo PWM.
+- Detección de Errores: Establece error_flag si duty_ch0 es mayor que
+period_ch0, y lo almacena en status_in.
+- Integración: Conecta las salidas de reg_iface a las entradas de pwm_unit,
+permitiendo configurar la señal PWM mediante escrituras en registros.
+
+#### Cómo funciona
+
+El módulo top_pwm_alt cumple la función de intermediario o puente entre la interfaz de configuración (reg_iface) y la unidad generadora de la señal (pwm_unit). A través de reg_iface, se escriben los valores deseados para el período (cfg_period) y el ciclo de trabajo (cfg_duty) en el registro de control. Estos valores son luego transmitidos internamente a pwm_unit, que se encarga de generar la señal PWM correspondiente, modulando su salida según los parámetros recibidos.
+
+Una característica importante de este diseño es que incorpora una verificación automática de validez en los parámetros configurados. Si el valor asignado al ciclo de trabajo excede el valor del período —lo cual representa una condición inválida en el contexto de señales PWM— el sistema detecta este error de forma inmediata. Como respuesta, se activa una bandera de error en el registro de estado, accesible para el usuario mediante lectura. Esta funcionalidad permite detectar configuraciones erróneas sin comprometer el funcionamiento del sistema, mejorando así su robustez y facilidad de depuración.
+
 
