@@ -232,3 +232,10 @@ Este módulo top-level conecta `reg_iface` y `pwm_unit`, gestionando el flujo de
 
 <img width="515" height="615" alt="image" src="https://github.com/user-attachments/assets/da47fd3d-3a4b-4309-a78d-fbcd319b1e2f" />
 
+### 7. Máquina de estados
+
+> El sistema PWM fue modelado como una máquina de estados finita (FSM) de tipo Mealy, ya que sus transiciones dependen tanto del estado actual como de señales de entrada (wr_en_i, rd_en_i, duty, period). El diseño permite detectar y manejar errores de configuración, mantener el estado de ejecución (RUN_PWM) y reiniciar el sistema mediante eventos como reset o clear error. La arquitectura favorece la  > reconfiguración dinámica sin bloqueo del sistema.
+
+<img width="467" height="490" alt="image" src="https://github.com/user-attachments/assets/f99aebfb-4b7a-4895-8568-20181a54d63d" />
+
+
