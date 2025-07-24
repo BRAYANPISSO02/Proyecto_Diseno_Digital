@@ -111,7 +111,13 @@ Este proyecto implementa un sistema digital en Verilog HDL que genera señales P
 
 ---
 
-### 1. `pwm_unit.v` — Núcleo Generador de PWM
+### 1. Diagrama de bloques del funcionamiento
+
+<img width="515" height="615" alt="image" src="https://github.com/user-attachments/assets/da47fd3d-3a4b-4309-a78d-fbcd319b1e2f" />
+
+---
+
+### 2. `pwm_unit.v` — Núcleo Generador de PWM
 
 Este módulo es el encargado de generar la señal PWM propiamente dicha. Sus características clave incluyen:
 
@@ -130,7 +136,7 @@ El módulo cuenta con un contador interno que se incrementa con el reloj y se re
 
 ---
 
-### 2. `reg_iface.v` — Interfaz de Registro
+### 3. `reg_iface.v` — Interfaz de Registro
 
 Este módulo proporciona una interfaz básica para el control y configuración del sistema mediante lectura y escritura de registros. Sus características incluyen:
 
@@ -142,7 +148,7 @@ Actúa como puente entre el entorno de control y el núcleo funcional del sistem
 
 ---
 
-### 3. `top_pwm_alt.v` — Módulo Top-Level
+### 4. `top_pwm_alt.v` — Módulo Top-Level
 
 Este módulo integra los componentes anteriores (`reg_iface` y `pwm_unit`) para conformar el diseño completo. Funciona como la entidad superior del sistema y coordina:
 
@@ -154,7 +160,7 @@ Gracias a esta arquitectura, el sistema es fácilmente integrable y reutilizable
 
 ---
 
-### 4. Señales de Entrada y Salida
+### 5. Señales de Entrada y Salida
 
 #### Entradas
 
@@ -178,7 +184,7 @@ Gracias a esta arquitectura, el sistema es fácilmente integrable y reutilizable
 
 ---
 
-### 5. Módulos del Sistema
+### 6. Módulos del Sistema
 
 El sistema está compuesto por los siguientes módulos:
 
@@ -227,10 +233,6 @@ Este módulo top-level conecta `reg_iface` y `pwm_unit`, gestionando el flujo de
   - Expone la salida `pwm_out` generada por el sistema.
 
 ---
-
-### 6. Diagrama de bloques del funcionamiento
-
-<img width="515" height="615" alt="image" src="https://github.com/user-attachments/assets/da47fd3d-3a4b-4309-a78d-fbcd319b1e2f" />
 
 ### 7. Máquina de estados
 
