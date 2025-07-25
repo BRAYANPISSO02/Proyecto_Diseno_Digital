@@ -14,6 +14,19 @@ Verificar el comportamiento funcional de:
 
 ---
 
+## Justificación del diseño de testbenches
+
+Los testbenches incluidos en este proyecto fueron seleccionados para cubrir de manera progresiva y estructurada los aspectos más relevantes del sistema PWM. Se organizaron de forma modular para facilitar pruebas unitarias e integración total.
+
+- `tb_pwm_unit.v`: permite validar de forma aislada el núcleo funcional más crítico: la generación de la señal PWM. Esta prueba verifica que la señal `pwm_o` se modula correctamente según los valores de `period` y `duty`, sin depender de una interfaz externa.
+
+- `tb_reg_iface.v`: enfocado en validar el acceso por registros, imitando el comportamiento de un microprocesador al interactuar con el periférico. Asegura que las configuraciones se cargan correctamente y que el sistema responde a lecturas y escrituras, así como a condiciones de reset.
+
+- `tb_top_pwm_alt.v`: integra ambos componentes anteriores en una simulación completa, permitiendo observar el comportamiento conjunto del periférico en condiciones cercanas a uso real. Se incluyen pruebas de escritura secuencial, verificación del `error_flag` y lectura de estado.
+
+Esta estructura modular permite identificar errores específicos en cada componente antes de verificar el sistema global, optimizando el proceso de depuración y validación funcional.
+
+
 ## Archivos incluidos
 
 | Archivo               | Descripción                                                                 |
@@ -47,15 +60,16 @@ vvp tb_top_pwm_alt.vvp
 # Visualizar resultados
 gtkwave tb_top_pwm_alt.vcd
 
-
-## Justificación de la estructura
-
-Se escogió esta estructura modular porque:
-- **Facilita el aislamiento de errores**: Permite probar cada módulo de forma individual antes de hacer una integración completa.
-- **Acelera el ciclo de desarrollo y depuración**: Puedes verificar cambios en un solo bloque antes de probar todo el sistema.
-- **Permite pruebas unitarias y de integración**: Se asegura que cada bloque cumple su función por separado y luego integrado.
-
 ---
+
+## Cómo correr las simulaciones y visualizar los resultados
+
+1. **Compila el testbench junto con los módulos RTL necesarios**  
+   (Ejemplo para `tb_top_pwm_alt.v`):
+
+   ```bash
+   iverilog -o tb/tb_top_pwm_alt.vvp tb/tb_top_pwm_alt.v ../rtl/pwm_unit.v ../rtl/reg_iface.v ../rtl/top_pwm_alt.v
+   ```
 
 ## Descripción y funcionamiento de cada testbench
 
@@ -112,8 +126,21 @@ Se escogió esta estructura modular porque:
    ```
 
 ## Resultados obtenidos
+### `tb_reg_iface.vcd` – Lectura y escritura de registros
 ![WhatsApp Image 2025-07-24 at 2 18 04 PM (1)](https://github.com/user-attachments/assets/fb01aab4-2704-4f95-9002-32f2b54ce0b3)
+
+### `tb_pwm_unit.vcd` – Generación PWM
 ![WhatsApp Image 2025-07-24 at 2 18 04 PM](https://github.com/user-attachments/assets/8f61afef-4dd3-4f12-874c-e48f63fe6559)
+
+Como se observa, los testbenches permiten:
+- Confirmar que `wr_en` y `rd_en` actualizan correctamente los registros.
+- Ver que `pwm_o` varía según `cfg_duty` y `cfg_period`.
+- Validar el reset y la transición suave de estado.
+
+## Estructura de carpetas
+
+<img width="197" height="194" alt="image" src="https://github.com/user-attachments/assets/df1dccea-5352-441b-9964-d75204f8096d" />
+
 
 ## Posibles mejoras futuras
 - Automatizar pruebas con scripts (`Makefile` o `bash`)
