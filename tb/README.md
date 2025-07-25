@@ -1,18 +1,52 @@
-# Testbenches de la carpeta `tb`
+# Testbenches – Verificación del Módulo PWM
 
-## Descripción general
-
-Esta carpeta contiene los **testbenches** (bancos de pruebas) para validar y verificar el funcionamiento de los módulos RTL del periférico PWM. Cada testbench simula un escenario diferente (unidad, interfaz de registro y top-level), permitiendo observar la funcionalidad, robustez y posibles errores en condiciones realistas.
+Este directorio contiene los bancos de prueba (testbenches) utilizados para verificar funcionalmente los módulos del sistema generador de señal PWM implementado en Verilog HDL.
 
 ---
 
-## Estructura de la carpeta
+## Objetivo
 
-- **tb_pwm_unit.v**: Testbench para el módulo generador PWM (`pwm_unit`).
-- **tb_reg_iface.v**: Testbench para la interfaz de registros (`reg_iface`).
-- **tb_top_pwm_alt.v**: Testbench para el módulo top-level integrado (`top_pwm_alt`).
+Verificar el comportamiento funcional de:
+
+- `pwm_unit.v` (generador PWM)
+- `reg_iface.v` (interfaz de registros)
+- `top_pwm_alt.v` (sistema completo)
 
 ---
+
+## Archivos incluidos
+
+| Archivo               | Descripción                                                                 |
+|-----------------------|-----------------------------------------------------------------------------|
+| `tb_pwm_unit.v`       | Prueba unitaria del núcleo PWM. Cambia `cfg_period` y `cfg_duty` para observar la forma de onda. |
+| `tb_reg_iface.v`      | Verifica operaciones de lectura/escritura sobre los registros.              |
+| `tb_top_pwm_alt.v`    | Simula el sistema completo como si fuera controlado por un microprocesador. |
+| `.vcd`                | Archivos de forma de onda para visualización en GTKWave.                   |
+| `.vvp`                | Binarios generados por `iverilog` para cada testbench.                     |
+
+---
+
+## Herramientas utilizadas
+
+- **Icarus Verilog (iverilog)** – compilación de testbenches
+- **GTKWave** – visualización de formas de onda `.vcd`
+
+---
+
+## Instrucciones de ejecución
+
+Desde la terminal, en el directorio `tb/`, ejecutar:
+
+```bash
+# Compilar testbench del sistema completo
+iverilog -o tb_top_pwm_alt.vvp tb_top_pwm_alt.v ../rtl/pwm_unit.v ../rtl/reg_iface.v ../rtl/top_pwm_alt.v
+
+# Ejecutar simulación
+vvp tb_top_pwm_alt.vvp
+
+# Visualizar resultados
+gtkwave tb_top_pwm_alt.vcd
+
 
 ## Justificación de la estructura
 
@@ -75,3 +109,13 @@ Se escogió esta estructura modular porque:
 
    ```bash
    iverilog -o tb/tb_top_pwm_alt.vvp tb/tb_top_pwm_alt.v ../rtl/pwm_unit.v ../rtl/reg_iface.v ../rtl/top_pwm_alt.v
+
+## Resultados obtenidos
+![WhatsApp Image 2025-07-24 at 2 18 04 PM (1)](https://github.com/user-attachments/assets/c53cd5c4-104e-462a-b134-888b7a5b1e1f)
+![WhatsApp Image 2025-07-24 at 2 18 04 PM](https://github.com/user-attachments/assets/8c88a40a-ec83-45eb-8610-4f84775c9dec)
+
+
+## Posibles mejoras futuras
+- Automatizar pruebas con scripts (`Makefile` o `bash`)
+- Incluir pruebas de límites extremos o casos de error en hardware
+- Medir cobertura de simulación
