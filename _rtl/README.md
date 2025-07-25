@@ -1,116 +1,77 @@
-# Periférico PWM - Documentación RTL
+# Módulos RTL – Generador PWM
 
-Este repositorio implementa un **módulo PWM configurable** en Verilog, compuesto por tres archivos principales:  
-- `reg_iface.v` (interfaz de registros)  
-- `pwm_unit.v` (núcleo PWM)  
-- `top_pwm_alt.v` (integración top-level)
-
-Toda la documentación usa los **nombres exactos de señales y puertos** del código.
+Este directorio contiene los módulos escritos en Verilog HDL que implementan el periférico generador de señal PWM configurable mediante una interfaz de registros. La arquitectura modular permite pruebas unitarias, integración flexible y reutilización en diferentes proyectos digitales.
 
 ---
 
-## Estructura y explicación de módulos
+## Archivos incluidos
 
-### 1. `reg_iface.v`  
-**Interfaz de registros de control y estado**
-
-#### **Puertos**
-- **Entradas**
-  - `clk_i`      : Reloj de sistema.
-  - `rst_ni`     : Reset global, activo en bajo.
-  - `addr_i`     : Dirección del registro a acceder.
-  - `wr_data_i`  : Dato a escribir en el registro seleccionado.
-  - `wr_en_i`    : Habilita operación de escritura.
-  - `rd_en_i`    : Habilita operación de lectura.
-  - `status_in_i`: Señales de estado del PWM (por ejemplo, el valor actual del contador o PWM).
-- **Salidas**
-  - `rd_data_o`  : Dato leído desde el registro seleccionado.
-  - `ctrl_o`     : Señales de control para el núcleo PWM (`periodo`, `duty`, `enable`...).
-  - `status_o`   : Salida de estado para uso externo (o para monitoreo desde el bus).
-
-#### **Descripción**
-Este módulo se encarga de mapear registros de configuración del periférico a través de un bus simple. Permite al usuario configurar el período, el ciclo útil (duty) y habilitar/deshabilitar el PWM a través de registros. También facilita la lectura de información de estado.
+| Archivo         | Descripción                                                              |
+|-----------------|---------------------------------------------------------------------------|
+| `reg_iface.v`   | Módulo que implementa la interfaz de registros de control y estado.       |
+| `pwm_unit.v`    | Núcleo generador de la señal PWM a partir de `period`, `duty`, `enable`. |
+| `top_pwm_alt.v` | Módulo de integración. Conecta los módulos anteriores para formar el periférico completo. |
 
 ---
 
-### 2. `pwm_unit.v`  
-**Núcleo generador PWM**
+## Interconexión de módulos
 
-#### **Puertos**
-- **Entradas**
-  - `clk_i`   : Reloj de sistema.
-  - `rst_ni`  : Reset global, activo en bajo.
-  - `ctrl_i`  : Señales de control provenientes de la interfaz (normalmente incluye: periodo, duty, enable).
-- **Salidas**
-  - `status_o`: Señales de estado, por ejemplo valor actual del contador.
-  - `pwm_o`   : Salida de señal PWM.
+```
++-------------+ +-----------+
+addr_i ---> | | | |
+wr_data_i ->| reg_iface.v |-----> | pwm_unit |
+wr_en_i --->| | | |---> pwm_o
+rd_en_i --->| | | |
++-------------+ +-----------+
+```
 
-#### **Descripción**
-Este módulo implementa la lógica generadora de la señal PWM.  
-Recibe parámetros configurables (período, duty, enable) y entrega la señal PWM correspondiente.  
-Reporta estado al exterior para depuración, monitoreo o sincronización.
+`top_pwm_alt.v` instancia `reg_iface.v` y `pwm_unit.v`, conectando el bus de control con el generador PWM.
 
 ---
 
-### 3. `top_pwm_alt.v`  
-**Integración top-level**
+## Puertos del módulo principal (`top_pwm_alt.v`)
 
-#### **Puertos**
-- **Entradas**
-  - `clk_i`      : Reloj de sistema.
-  - `rst_ni`     : Reset global, activo en bajo.
-  - `addr_i`     : Dirección de registro.
-  - `wr_data_i`  : Dato a escribir.
-  - `wr_en_i`    : Habilita escritura.
-  - `rd_en_i`    : Habilita lectura.
-- **Salidas**
-  - `rd_data_o`  : Dato leído.
-  - `pwm_o`      : Salida PWM para el mundo exterior.
-
-#### **Descripción**
-Este módulo instancia y conecta `reg_iface.v` y `pwm_unit.v`.  
-Hace que todo el periférico sea fácilmente integrable en un SoC, microcontrolador soft o sistema digital más grande.
+| Señal       | Dirección | Descripción                             |
+|-------------|-----------|-----------------------------------------|
+| `clk_i`     | Entrada   | Señal de reloj                          |
+| `rst_ni`    | Entrada   | Reset asincrónico, activo en bajo       |
+| `addr_i`    | Entrada   | Dirección del registro                  |
+| `wr_data_i` | Entrada   | Dato a escribir                         |
+| `wr_en_i`   | Entrada   | Habilitación de escritura               |
+| `rd_en_i`   | Entrada   | Habilitación de lectura                 |
+| `rd_data_o` | Salida    | Dato leído desde el registro            |
+| `pwm_o`     | Salida    | Señal PWM generada                      |
 
 ---
 
-## Justificación de la arquitectura
+## Mapeo de registros (`reg_iface.v`)
 
-- **Modularidad**: Permite reutilización y pruebas independientes.
-- **Separación clara de funciones**: La interfaz de registros se mantiene independiente de la lógica PWM.
-- **Escalabilidad**: Puedes agregar más registros o modos avanzados (dead time, interrupciones, etc.) sin afectar el núcleo.
-- **Compatibilidad**: Facilita la integración con buses simples personalizados.
-
----
-
-## Descripción de los registros de control (en `reg_iface.v`)
-
-| Dirección (`addr_i`) | Registro     | Función                              | Bits relevantes     |
-|----------------------|--------------|--------------------------------------|---------------------|
-| 0x0                  | `period`     | Valor de período del PWM             | Depende de diseño   |
-| 0x1                  | `duty`       | Valor de duty cycle                  | Depende de diseño   |
-| 0x2                  | `enable`     | Habilitación del PWM (bit 0)         | Solo bit 0          |
-
-
+| Dirección (`addr_i`) | Registro | Función                             |
+|----------------------|----------|-------------------------------------|
+| `0x0`                | period   | Duración del ciclo PWM              |
+| `0x1`                | duty     | Ciclo útil de la señal              |
+| `0x2`                | enable   | Habilitación del PWM (`1` = ON)     |
 
 ---
 
-## Ejemplo de diagrama de tiempo
+## Convenciones de diseño
 
-### WaveDrom (código)
+- El reset global (`rst_ni`) es **activo en bajo**.
+- Todas las operaciones de lectura/escritura se realizan sobre flancos de subida de `clk_i`.
+- La salida `pwm_o` permanece en bajo cuando `enable = 0` o `duty = 0`.
 
-```json
-{
-  "signal": [
-    { "name": "clk_i",     "wave": "p.......|........|........|........" },
-    { "name": "rst_ni",    "wave": "10......|........|........|........", "data": ["RESET"] },
-    { "name": "wr_en_i",   "wave": "0.10....|0.10....|0......0|........", "data": ["", "PER", "", "DUTY", "", "", "EN"] },
-    { "name": "rd_en_i",   "wave": "0.......|.10.....|........|........", "data": ["", "RD"] },
-    { "name": "addr_i",    "wave": "x.=.....|x.=.....|x......x|........", "data": ["", "0", "", "1", "", "", "2"] },
-    { "name": "wr_data_i", "wave": "x.=.....|x.=.....|x......x|........", "data": ["", "20", "", "10", "", "", "1"] },
-    { "name": "ctrl_o",    "wave": "x.......|..=.....|..=.....|..=.....", "data": ["", "PER", "DUTY", "EN"] },
-    { "name": "pwm_o",     "wave": "0.......|..01.0..|.1010.1.|.0101.0." }
-  ],
-  "head": {
-    "text": "Diagrama de tiempo PWM (WaveDrom)"
-  }
-}
+---
+
+## Consideraciones
+
+- El diseño puede escalarse fácilmente para incluir nuevas funcionalidades (e.g. interrupciones, dead-time, múltiples canales).
+- Compatible con buses simples de 1 ciclo para integración en SoCs o microcontroladores soft.
+
+---
+
+## Referencias
+
+- [README general del proyecto PWM](../README.md)
+- [README de Testbenches](../tb/README.md)
+- Icarus Verilog: https://steveicarus.github.io/iverilog/
+- GTKWave: http://gtkwave.sourceforge.net/
