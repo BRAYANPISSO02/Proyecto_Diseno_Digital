@@ -236,7 +236,7 @@ Este módulo top-level conecta `reg_iface` y `pwm_unit`, gestionando el flujo de
 
 ### 7. Máquina de estados
 
-> El sistema PWM fue modelado como una máquina de estados finita (FSM) de tipo Mealy, ya que sus transiciones dependen tanto del estado actual como de señales de entrada (wr_en_i, rd_en_i, duty, period). El diseño permite detectar y manejar errores de configuración, mantener el estado de ejecución (RUN_PWM) y reiniciar el sistema mediante eventos como reset o clear error. La arquitectura favorece la  reconfiguración dinámica sin bloqueo del sistema.
+> El comportamiento del sistema puede modelarse funcionalmente como una máquina de estados finita (FSM) de tipo Mealy. Aunque no se implementa explícitamente en el RTL como una FSM codificada, esta abstracción resulta útil para representar el flujo de control basado en señales como wr_en_i, rd_en_i, duty y period. La FSM propuesta ilustra el flujo de configuración, validación, ejecución y manejo de errores del sistema PWM, facilitando su análisis y extensión.
 
 <img width="467" height="490" alt="image" src="https://github.com/user-attachments/assets/f99aebfb-4b7a-4895-8568-20181a54d63d" />
 
