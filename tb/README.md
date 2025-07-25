@@ -109,11 +109,11 @@ Se escogió esta estructura modular porque:
 
    ```bash
    iverilog -o tb/tb_top_pwm_alt.vvp tb/tb_top_pwm_alt.v ../rtl/pwm_unit.v ../rtl/reg_iface.v ../rtl/top_pwm_alt.v
+   ```
 
 ## Resultados obtenidos
-![WhatsApp Image 2025-07-24 at 2 18 04 PM (1)](https://github.com/user-attachments/assets/c53cd5c4-104e-462a-b134-888b7a5b1e1f)
-![WhatsApp Image 2025-07-24 at 2 18 04 PM](https://github.com/user-attachments/assets/8c88a40a-ec83-45eb-8610-4f84775c9dec)
-
+![WhatsApp Image 2025-07-24 at 2 18 04 PM (1)](https://github.com/user-attachments/assets/fb01aab4-2704-4f95-9002-32f2b54ce0b3)
+![WhatsApp Image 2025-07-24 at 2 18 04 PM](https://github.com/user-attachments/assets/8f61afef-4dd3-4f12-874c-e48f63fe6559)
 
 ## Posibles mejoras futuras
 - Automatizar pruebas con scripts (`Makefile` o `bash`)
