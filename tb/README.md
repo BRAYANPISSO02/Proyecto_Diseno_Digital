@@ -141,6 +141,9 @@ Como se observa, los testbenches permiten:
 
 <img width="197" height="194" alt="image" src="https://github.com/user-attachments/assets/df1dccea-5352-441b-9964-d75204f8096d" />
 
+## Diagrama de tiempo
+
+<img width="1280" height="301" alt="image" src="https://github.com/user-attachments/assets/47c791da-c3f2-4696-b63c-0a1d06926a7a" />
 
 ## Posibles mejoras futuras
 - Automatizar pruebas con scripts (`Makefile` o `bash`)
