@@ -448,3 +448,6 @@ El módulo top_pwm_alt cumple la función de intermediario o puente entre la int
 Una característica importante de este diseño es que incorpora una verificación automática de validez en los parámetros configurados. Si el valor asignado al ciclo de trabajo excede el valor del período —lo cual representa una condición inválida en el contexto de señales PWM— el sistema detecta este error de forma inmediata. Como respuesta, se activa una bandera de error en el registro de estado, accesible para el usuario mediante lectura. Esta funcionalidad permite detectar configuraciones erróneas sin comprometer el funcionamiento del sistema, mejorando así su robustez y facilidad de depuración.
 
 
+VEAMOS MANITO
+
+
